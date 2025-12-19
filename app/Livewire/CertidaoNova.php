@@ -15,6 +15,22 @@ class CertidaoNova extends Component{
     public $militar = null;         // stdClass com os dados retornados da consulta (ou null)
     public bool $sucesso = false;
     public ?int $certidaoId = null;
+    public ?Certidao $certidao = null;
+
+    //função para gerar o pdf com TCPDF
+    public function gerarPdf(){
+        $service = app(\App\Services\GerarCertidaoPdfService::class);
+
+        $arquivo = $service->gerar([
+            'id' => $this->certidao->id,
+            'numero' => $this->certidao->numero_certidao,
+            'codigo_autenticidade' => $this->certidao->cod_autenticidade,
+            'url_autenticacao' => route('certidao.validar', $this->certidao->cod_autenticidade),//ver como vai ficar aqui
+        ]);
+
+        return response()->file($arquivo);
+    }
+
 
     //função para validar o cpf
     private function validarCPF(string $cpf): bool{
@@ -327,11 +343,11 @@ class CertidaoNova extends Component{
                 'militar_matricula'     => $this->militar->matricula,
             ];
 
-            // Descomente a linha abaixo para realmente salvar via Eloquent:
-            // $certidao = Certidao::create($payload);
+            // salvar via Eloquent e enviar as informaçoes para view:
+            $this->certidao = Certidao::create($payload);
 
             // CONTROLA A VIEW
-            //$this->certidaoId = $certidao->id;
+            $this->certidaoId = $this->certidao->id;
             $this->sucesso = true;
 
         } catch (Exception $e) {

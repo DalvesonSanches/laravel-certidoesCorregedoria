@@ -112,8 +112,8 @@
                         icon="arrow-down-tray"
                         color="green"
                         light
-                        {{-- no futuro --}}
-                        {{-- href="{{ route('certidoes.download', $certidaoId) }}" --}}
+                        href="{{ route('certidao.pdf', $certidao->cod_autenticidade) }}"
+                        target="_blank"
                     >
                         Download
                     </x-button>
