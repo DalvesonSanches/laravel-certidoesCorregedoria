@@ -80,7 +80,7 @@ class CertidaoNova extends Component{
         return $codigo;
     }
 
-    ///funcao gerar numero da certidao
+    ///funcao gerar numero da certidoes
     private function gerarNumeroCertidao(): string{
         $anoAtual = now()->year;
         // Busca a última certidão gerada
