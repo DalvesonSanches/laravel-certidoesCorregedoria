@@ -4,7 +4,7 @@ namespace App\Livewire;
 use Livewire\Component;
 use TallStackUi\Traits\Interactions; //mensagem de alerta
 use Illuminate\Support\Facades\DB; //acesso ao banco de dados
-use app\Models\Certidao;
+use App\Models\Certidao;
 use Illuminate\Support\Str; //gera codigo randonico
 use Exception; //gera exception
 use Carbon\Carbon; //calculo de datas
@@ -267,7 +267,9 @@ class CertidaoNova extends Component{
         }
 
         //validade de 30 dias
-        $data_validade = Carbon::now()->addDays(30)->timestamp;
+        $data_validade = (new \DateTime())
+            ->modify('+30 days')
+            ->format('Y-m-d H:i:s');
 
         //busca o corregedor ativo
         $corregedor = DB::table('corregedoria.tipos_funcoes as tipos_funcoes')
@@ -343,15 +345,19 @@ class CertidaoNova extends Component{
                 'militar_matricula'     => $this->militar->matricula,
             ];
 
+            dd($payload);
             // salvar via Eloquent e enviar as informaçoes para view:
             $this->certidao = Certidao::create($payload);
+            dd(Certidao::create($payload));
+
 
             // CONTROLA A VIEW
             $this->certidaoId = $this->certidao->id;
             $this->sucesso = true;
 
         } catch (Exception $e) {
-            $this->dialog()->error('Erro', 'Erro ao criar a certidão. Tente novamente.')->send();
+            //$this->dialog()->error('Erro', 'Erro ao criar a certidão. Tente novamente.')->send();
+            dd($e->getMessage(), $e->getTraceAsString());
         }
     }
 

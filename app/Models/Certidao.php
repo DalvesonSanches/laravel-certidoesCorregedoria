@@ -5,8 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Certidao extends Model
-{
+class Certidao extends Model{
     use HasFactory;
 
     // tabela com schema
