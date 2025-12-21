@@ -358,11 +358,19 @@ class CertidaoNova extends Component{
             
             //GERA O PDF IMEDIATAMENTE
             app(\App\Services\GerarCertidaoPdfService::class)->gerar([
-                'id' => $this->certidao->id,
-                'numero' => $this->certidao->numero_certidao,
-                'codigo_autenticidade' => $this->certidao->cod_autenticidade,
-                'url_autenticacao' => route('certidao.pdf', $this->certidao->cod_autenticidade),
-                'arquivo_nome' => $this->certidao->arquivo_nome,
+                'id'                    => $this->certidao->id,
+                'numero'                => $this->certidao->numero_certidao,
+                'codigo_autenticidade'  => $this->certidao->cod_autenticidade,
+                'url_autenticacao'      => route('certidao.pdf', $this->certidao->cod_autenticidade),
+                'arquivo_nome'          => $this->certidao->arquivo_nome,
+                'militar_cpf'           => $this->militar->cpf,
+                'militar_nome'          => $nomeFormatado,
+                'corregedor_cpf'        => $corregedorCpf,
+                'data_validade'         => (new \DateTime($data_validade))->format('d/m/Y'),
+                'corregedor_nome'       => $nomeFormatadoCorregedor,
+                'militar_rg'            => $this->militar->rgm_numero,
+                'militar_matricula'     => $this->militar->matricula,
+                'data_criacao'          => date('d/m/Y', $this->certidao->data_criacao),
             ]);
 
             // CONTROLA A VIEW
