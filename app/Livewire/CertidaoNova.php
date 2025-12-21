@@ -18,6 +18,7 @@ class CertidaoNova extends Component{
     public ?Certidao $certidao = null;
 
     //função para gerar o pdf com TCPDF
+   /*
     public function gerarPdf(){
         $service = app(\App\Services\GerarCertidaoPdfService::class);
 
@@ -30,7 +31,7 @@ class CertidaoNova extends Component{
 
         return response()->file($arquivo);
     }
-
+    */
 
     //função para validar o cpf
     private function validarCPF(string $cpf): bool{
@@ -84,44 +85,50 @@ class CertidaoNova extends Component{
         return $postoGraduacaoFormatado . implode(' ', $resultado);
     }
 
-    //função gera codigo autenticidade
-    private function gerarCodigoAutenticidade(int $tamanho = 40): string{
-        do {
-            $codigo = Str::random($tamanho);
-        } while (
-            DB::table('corregedoria.certidoes')
-                ->where('cod_autenticidade', $codigo)
-                ->exists()
-        );
-        return $codigo;
+    //função gera codigo autenticidade 40 caracteres
+    private function gerarCodigoAutenticidade(): string{
+        return Str::ulid() . Str::random(14);
     }
 
     ///funcao gerar numero da certidoes
     private function gerarNumeroCertidao(): string{
-        $anoAtual = now()->year;
-        // Busca a última certidão gerada
-        $ultimaCertidao = DB::table('corregedoria.certidoes')
-            ->orderByDesc('id')
-            ->value('numero_certidao');
-        // Define o ano base
-        $anoCertidao = $anoAtual;
-        if ($ultimaCertidao && str_contains($ultimaCertidao, '/')) {
-            [, $anoCertidaoBanco] = explode('/', $ultimaCertidao);
-            // Se mudou o ano, reinicia a sequence
-            if ((int) $anoCertidaoBanco !== $anoAtual) {
-                DB::statement(
-                    'ALTER SEQUENCE corregedoria.numero_certidoes_seq RESTART WITH 1'
-                );
-                $anoCertidao = $anoAtual;
+        return DB::transaction(function () {
+
+            $anoCorrente = now()->year;
+
+            // Lock explícito (PostgreSQL)
+            DB::statement(
+                "LOCK TABLE corregedoria.certidoes IN EXCLUSIVE MODE"
+            );
+
+            $ultimaCertidao = DB::table('corregedoria.certidoes')
+                ->orderByDesc('id')
+                ->value('numero_certidao');
+
+            if ($ultimaCertidao) {
+                [, $anoCertidao] = explode('/', $ultimaCertidao);
+            } else {
+                $anoCertidao = $anoCorrente;
             }
-        }
-        // Próximo número da sequence
-        $sequencial = DB::scalar(
-            "SELECT nextval('corregedoria.numero_certidoes_seq')"
-        );
-        // Formata: 000001/2025
-        return str_pad($sequencial, 6, '0', STR_PAD_LEFT) . '/' . $anoCertidao;
+
+            if ((int) $anoCertidao !== $anoCorrente) {
+                DB::statement(
+                    "ALTER SEQUENCE corregedoria.numero_certidoes_seq RESTART WITH 1"
+                );
+                $anoCertidao = $anoCorrente;
+            }
+
+            $sequencial = DB::scalar(
+                "SELECT nextval('corregedoria.numero_certidoes_seq')"
+            );
+
+            return str_pad($sequencial, 6, '0', STR_PAD_LEFT) . '/' . $anoCertidao;
+        });
     }
+
+
+
+
 
     //função para buscar informações do militar
     private function buscarMilitarPorCpf(string $cpfNumeros): ?object{
@@ -345,11 +352,18 @@ class CertidaoNova extends Component{
                 'militar_matricula'     => $this->militar->matricula,
             ];
 
-            dd($payload);
             // salvar via Eloquent e enviar as informaçoes para view:
             $this->certidao = Certidao::create($payload);
-            dd(Certidao::create($payload));
-
+            //dd(Certidao::create($payload));
+            
+            //GERA O PDF IMEDIATAMENTE
+            app(\App\Services\GerarCertidaoPdfService::class)->gerar([
+                'id' => $this->certidao->id,
+                'numero' => $this->certidao->numero_certidao,
+                'codigo_autenticidade' => $this->certidao->cod_autenticidade,
+                'url_autenticacao' => route('certidao.pdf', $this->certidao->cod_autenticidade),
+                'arquivo_nome' => $this->certidao->arquivo_nome,
+            ]);
 
             // CONTROLA A VIEW
             $this->certidaoId = $this->certidao->id;

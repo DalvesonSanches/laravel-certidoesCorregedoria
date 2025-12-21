@@ -123,6 +123,8 @@
                             icon="arrow-down-tray"
                             color="green"
                             light
+                            href="{{ route('certidao.pdf', $certidao->cod_autenticidade) }}"
+                            target="_blank"
                         >
                             Download
                         </x-button>

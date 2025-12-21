@@ -30,7 +30,7 @@
                     x-mask="999.999.999-99"
                     wire:model.defer="cpf"
                     maxlength="14"
-                    required
+                    required  
                 />
 
                 <x-slot:footer>

@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Pdf\MYPDF;
-use Illuminate\Support\Facades\DB;
 
 class GerarCertidaoPdfService{
     public function gerar(array $dados): string{
@@ -79,13 +78,6 @@ class GerarCertidaoPdfService{
         // Salva PDF
         $pdf->Output($caminho, 'F');
 
-        // Atualiza banco
-        /*
-        DB::table('corregedoria.certidoes')
-            ->where('id', $dados['id'])
-            ->update(['arquivo_nome' => $nomeArquivo]);
-
-        */
         return $caminho;
     }
 }

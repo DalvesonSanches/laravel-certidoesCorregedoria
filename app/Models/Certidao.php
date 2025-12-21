@@ -11,6 +11,9 @@ class Certidao extends Model{
     // tabela com schema
     protected $table = 'corregedoria.certidoes';
 
+    // Desativa created_at e updated_at quando na tabela tem outro nome
+    public $timestamps = false;
+
     // campos que podem ser preenchidos via create()
     protected $fillable = [
         'cod_autenticidade',	

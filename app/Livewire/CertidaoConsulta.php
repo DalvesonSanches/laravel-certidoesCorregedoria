@@ -33,7 +33,7 @@ class CertidaoConsulta extends Component{
 
         // Busca a certidão pelo código de autenticidade
         $certidao = Certidao::where('cod_autenticidade', $this->codigoAutenticidade)
-            ->select('data_validade', 'situacao', 'arquivo_nome', 'militar_nome', 'numero_certidao')
+            ->select('data_validade', 'situacao', 'arquivo_nome', 'militar_nome', 'numero_certidao', 'cod_autenticidade')
             ->first();
 
         // Não encontrou
