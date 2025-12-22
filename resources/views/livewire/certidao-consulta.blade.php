@@ -83,7 +83,7 @@
                     Certidão válida
                 </x-slot:title>
 
-                <div class="grid grid-cols-1 gap-4 mt-4">
+                <div class="grid grid-cols-1 gap-4 mt-4 text-gray-700">
 
                     <div>
                         <strong>Código de autenticidade:</strong><br>

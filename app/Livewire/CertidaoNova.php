@@ -8,6 +8,7 @@ use App\Models\Certidao;
 use Illuminate\Support\Str; //gera codigo randonico
 use Exception; //gera exception
 use Carbon\Carbon; //calculo de datas
+use Symfony\Component\HttpFoundation\Response;
 
 class CertidaoNova extends Component{
     use Interactions;
@@ -32,6 +33,42 @@ class CertidaoNova extends Component{
         return response()->file($arquivo);
     }
     */
+    //função para realizar o donwload do pdf no botao download nas rotas
+    public function baixarPdf(string $codigo){
+        // Busca a certidão pelo código
+        $certidao = Certidao::where('cod_autenticidade', $codigo)->first();
+        if (!$certidao) {
+            abort(Response::HTTP_NOT_FOUND, 'Certidão não encontrada.');
+        }
+        // Caminho do arquivo
+        $caminho = storage_path('app/certidoes/' . $certidao->arquivo_nome);
+        // Verifica se o arquivo existe
+        if (!file_exists($caminho)) {
+            abort(Response::HTTP_NOT_FOUND, 'Arquivo não encontrado.');
+        }
+        // Retorna o PDF
+        return response()->file($caminho);
+    }
+
+    //validar o qrcode
+    public function validarCertidao(string $codigo){
+        $erro = null;
+        // Busca certidão
+        $certidao = Certidao::where('cod_autenticidade', $codigo)->first();
+        if (!$certidao) {
+            $erro = 'Certidão não encontrada.';
+        }
+        elseif ($certidao->situacao !== 'ATIVO') {
+            $erro = 'Sua certidão não está ativa.';
+        }
+        elseif (strtotime($certidao->data_validade) < time()) {
+            $erro = 'Sua certidão está vencida.';
+        }
+        return view('livewire.certidao-validar', [
+            'certidao' => $certidao,
+            'erro'     => $erro
+        ]);
+    }
 
     //função para validar o cpf
     private function validarCPF(string $cpf): bool{
@@ -125,10 +162,6 @@ class CertidaoNova extends Component{
             return str_pad($sequencial, 6, '0', STR_PAD_LEFT) . '/' . $anoCertidao;
         });
     }
-
-
-
-
 
     //função para buscar informações do militar
     private function buscarMilitarPorCpf(string $cpfNumeros): ?object{
@@ -361,7 +394,7 @@ class CertidaoNova extends Component{
                 'id'                    => $this->certidao->id,
                 'numero'                => $this->certidao->numero_certidao,
                 'codigo_autenticidade'  => $this->certidao->cod_autenticidade,
-                'url_autenticacao'      => route('certidao.pdf', $this->certidao->cod_autenticidade),
+                'url_autenticacao'      => route('certidao.validar', $this->certidao->cod_autenticidade),
                 'arquivo_nome'          => $this->certidao->arquivo_nome,
                 'militar_cpf'           => $this->militar->cpf,
                 'militar_nome'          => $nomeFormatado,

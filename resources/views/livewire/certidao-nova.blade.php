@@ -87,39 +87,40 @@
                 color="green"
                 light
             >
-                <p class="font-semibold text-lg">
-                    {{--como o nome esta vindo ja formatado o html destacando nome guerra é necessario usar exclamação para o blade entender--}}
-                    {!! $militar->nome_formatado !!}
-                </p>
+                <div class="mt-3 text-gray-700">
+                    <p class="font-semibold text-lg">
+                        {{--como o nome esta vindo ja formatado o html destacando nome guerra é necessario usar exclamação para o blade entender--}}
+                        {!! $militar->nome_formatado !!}
+                    </p>
 
-                <p class="mb-4">
-                    Sua certidão foi gerada com sucesso. Clique em dowload para baixar o arquivo.
-                </p>
+                    <p class="mb-4">
+                        Sua certidão foi gerada com sucesso. Clique em dowload para baixar o arquivo.
+                    </p>
 
-                <div class="flex justify-center gap-4 mt-4">
-                    <x-button
-                        outline
-                        wire:navigate
-                        href="{{ route('certidao-nova') }}"
-                        icon="plus"
-                        color="blue"
-                        light
-                    >
-                        Nova Certidão
-                    </x-button>
+                    <div class="flex justify-center gap-4 mt-4">
+                        <x-button
+                            outline
+                            wire:navigate
+                            href="{{ route('certidao-nova') }}"
+                            icon="plus"
+                            color="blue"
+                            light
+                        >
+                            Nova Certidão
+                        </x-button>
 
-                    <x-button
-                        icon="arrow-down-tray"
-                        color="green"
-                        light
-                        href="{{ route('certidao.pdf', $certidao->cod_autenticidade) }}"
-                        target="_blank"
-                    >
-                        Download
-                    </x-button>
+                        <x-button
+                            icon="arrow-down-tray"
+                            color="green"
+                            light
+                            href="{{ route('certidao.pdf', $certidao->cod_autenticidade) }}"
+                            target="_blank"
+                        >
+                            Download
+                        </x-button>
+                    </div>
+
                 </div>
-
-
             </x-alert>
         </div>
     @endif
