@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Services;
-
 use App\Pdf\MYPDF;
 
 class GerarCertidaoPdfService{
@@ -74,17 +73,18 @@ class GerarCertidaoPdfService{
 		$pdf->ln(20);
 		$pdf->writeHTMLCell(0, 0, '', '',$dados['corregedor_nome'].'<br><span style="font-weight: bold;">Corregedor(a) do CBMAP</span>', 0, 1, 0, true, 'C', true);
         
-        // Caminho
-        //$nomeArquivo = str_replace('/', '_', $dados['numero']) . '.pdf';
+        // caso deseje salvar o PDF localmente
+        /*
         $nomeArquivo = $dados['arquivo_nome'];
         $caminho = storage_path('app/certidoes/' . $nomeArquivo);//localmente salvo
         if (!is_dir(dirname($caminho))) {
             mkdir(dirname($caminho), 0755, true);
         }
-
         // Salva PDF
-        $pdf->Output($caminho, 'F');
-
+        $pdf->Output($caminho, 'F'); // F = file
         return $caminho;
+        */
+        //caso deseje enviar o PDF ja da memoria sem salvar local
+        return $pdf->Output('', 'S'); // S = string
     }
 }

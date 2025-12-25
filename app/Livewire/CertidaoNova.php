@@ -9,6 +9,9 @@ use Illuminate\Support\Str; //gera codigo randonico
 use Exception; //gera exception
 use Carbon\Carbon; //calculo de datas
 use Symfony\Component\HttpFoundation\Response;
+use App\Services\GerarCertidaoPdfService;// gera pdf certidao
+use App\Services\CertidaoStorageService; //envia pdf para minio
+use Illuminate\Support\Facades\Storage;
 
 class CertidaoNova extends Component{
     use Interactions;
@@ -35,19 +38,31 @@ class CertidaoNova extends Component{
     */
     //função para realizar o donwload do pdf no botao download nas rotas
     public function baixarPdf(string $codigo){
-        // Busca a certidão pelo código
+        // 1Busca a certidão pelo código
         $certidao = Certidao::where('cod_autenticidade', $codigo)->first();
         if (!$certidao) {
             abort(Response::HTTP_NOT_FOUND, 'Certidão não encontrada.');
         }
-        // Caminho do arquivo
-        $caminho = storage_path('app/certidoes/' . $certidao->arquivo_nome);
-        // Verifica se o arquivo existe
-        if (!file_exists($caminho)) {
+        // 2Caminho do arquivo DENTRO do bucket
+        $path = 'certidoes/' . $certidao->arquivo_nome;
+        // 3Verifica se o arquivo existe no MinIO
+        if (!Storage::disk('s3')->exists($path)) {
             abort(Response::HTTP_NOT_FOUND, 'Arquivo não encontrado.');
         }
-        // Retorna o PDF
-        return response()->file($caminho);
+        // Stream do arquivo
+        $stream = Storage::disk('s3')->readStream($path);
+
+        // Retorna o PDF para o navegador
+        return response()->stream(function () use ($stream) {
+            fpassthru($stream);
+        }, 200, [
+            //tipo de arquivo
+            'Content-Type'        => 'application/pdf',
+            //abre o arquivo no navegador
+            'Content-Disposition' => 'inline; filename="'.$certidao->arquivo_nome.'"',
+            //se quiser baixar diretamente o arquivo
+            //'Content-Disposition' => 'attachment; filename="'.$certidao->arquivo_nome.'"',
+        ]);
     }
 
     //validar o qrcode
@@ -389,8 +404,8 @@ class CertidaoNova extends Component{
             $this->certidao = Certidao::create($payload);
             //dd(Certidao::create($payload));
             
-            //GERA O PDF IMEDIATAMENTE
-            app(\App\Services\GerarCertidaoPdfService::class)->gerar([
+            // após criar a Certidao no banco, chama o service que vai gerar a certidão em memoria
+            $pdfBinario = app(GerarCertidaoPdfService::class)->gerar([
                 'id'                    => $this->certidao->id,
                 'numero'                => $this->certidao->numero_certidao,
                 'codigo_autenticidade'  => $this->certidao->cod_autenticidade,
@@ -405,6 +420,13 @@ class CertidaoNova extends Component{
                 'militar_matricula'     => $this->militar->matricula,
                 'data_criacao'          => date('d/m/Y', $this->certidao->data_criacao),
             ]);
+
+            // após gerar em memoria chama o service que vai enviar o pdf memomoria para o minio
+            app(CertidaoStorageService::class)
+                ->salvarPdfEmMemoriaNoMinio(
+                    $this->certidao->arquivo_nome,
+                    $pdfBinario
+                );
 
             // CONTROLA A VIEW
             $this->certidaoId = $this->certidao->id;
