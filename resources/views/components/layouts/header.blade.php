@@ -1,4 +1,4 @@
-<header x-data="{ open: false }" class="bg-[#bb2a2a] text-white py-6 shadow border-b border-gray-200">
+<header x-data="{ open: false }" class="bg-[#bb2a2a] text-white py-6 shadow border-b border-gray-200  dark:bg-gray-800 dark:border-gray-600">
     <div class="max-w-7xl mx-auto px-6">
         <!-- Topo: logo + nome + menu -->
         <div class="flex items-center justify-between">
@@ -48,6 +48,8 @@
                     class="flex items-center gap-2 hover:text-primary-200 dark:text-gray-200">
                     <i class="fa-solid fa-magnifying-glass text-2xl leading-none"></i> Consultar Certidão
                 </a>
+                 <!-- Exemplo de botão para alternar o tema -->
+                <x-theme-switch />
             </nav>
         </div>
 
@@ -55,7 +57,7 @@
         <nav 
             x-show="open"
             x-transition
-            class="md:hidden mt-4 bg-[#bb2a2a] rounded-lg p-4 space-y-4 text-sm font-medium">
+            class="md:hidden mt-4 bg-[#bb2a2a] rounded-lg p-4 space-y-4 text-sm font-medium dark:bg-gray-800 dark:border-gray-600">
             
             <a wire:navigate href="{{ route('home') }}" 
                 class="flex items-center gap-2 hover:text-primary-200 dark:text-gray-200">
@@ -71,6 +73,8 @@
                 class="flex items-center gap-2 hover:text-primary-200 dark:text-gray-200">
                 <i class="fa-solid fa-magnifying-glass text-xl"></i> Consultar Certidão
             </a>
+            <!-- Exemplo de botão para alternar o tema -->
+            <x-theme-switch />
         </nav>
 
         <!-- Linha divisória -->

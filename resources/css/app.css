@@ -1,7 +1,6 @@
-
-@import '@fortawesome/fontawesome-free/css/all.min.css';
 @import 'tailwindcss';
 @import '../../vendor/tallstackui/tallstackui/css/v4.css';
+@import '@fortawesome/fontawesome-free/css/all.min.css';
 
 @source '../views';
 @source '../../vendor/tallstackui/tallstackui/*/.php';
